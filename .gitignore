@@ -34,3 +34,12 @@ install_manifest.txt
 *.suo
 *.filters
 *.vcxproj
+*.a
+*.so
+*.so.*
+*.swp
+fann_tests
+CPackConfig.cmake
+CPackSourceConfig.cmake
+fann-config.cmake
+fann.pc
