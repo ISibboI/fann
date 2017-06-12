@@ -101,6 +101,20 @@ FANN_EXTERNAL void FANN_API fann_train(struct fann *ann, fann_type * input,
 
 	fann_update_weights(ann);
 }
+
+/* Trains the network with the backpropagation algorithm.
+ */
+FANN_EXTERNAL void FANN_API fann_train_masked(struct fann *ann, fann_type * input,
+									   fann_type * desired_output, char * output_mask)
+{
+	fann_run(ann, input);
+
+	fann_compute_MSE_masked(ann, desired_output, output_mask);
+
+	fann_backpropagate_MSE(ann);
+
+	fann_update_weights(ann);
+}
 #endif
 
 
@@ -274,6 +288,76 @@ void fann_compute_MSE(struct fann *ann, fann_type * desired_output)
 		*error_it = fann_activation_derived(last_layer_begin->activation_function,
 											last_layer_begin->activation_steepness, neuron_value,
 											last_layer_begin->sum) * neuron_diff;
+
+		desired_output++;
+		error_it++;
+
+		ann->num_MSE++;
+	}
+}
+
+/* INTERNAL FUNCTION
+    compute the error at the network output
+	(usually, after forward propagation of a certain input vector, fann_run)
+	the error is a sum of squares for all the output units
+	also increments a counter because MSE is an average of such errors
+
+	After this train_errors in the output layer will be set to:
+	neuron_value_derived * (desired_output - neuron_value)
+ */
+void fann_compute_MSE_masked(struct fann *ann, fann_type * desired_output, char * output_mask)
+{
+	fann_type neuron_value, neuron_diff, *error_it = 0, *error_begin = 0;
+	struct fann_neuron *last_layer_begin = (ann->last_layer - 1)->first_neuron;
+	const struct fann_neuron *last_layer_end = last_layer_begin + ann->num_output;
+	const struct fann_neuron *first_neuron = ann->first_layer->first_neuron;
+
+	/* if no room allocated for the error variabels, allocate it now */
+	if(ann->train_errors == NULL)
+	{
+		ann->train_errors = (fann_type *) calloc(ann->total_neurons, sizeof(fann_type));
+		if(ann->train_errors == NULL)
+		{
+			fann_error((struct fann_error *) ann, FANN_E_CANT_ALLOCATE_MEM);
+			return;
+		}
+	}
+	else
+	{
+		/* clear the error variabels */
+		memset(ann->train_errors, 0, (ann->total_neurons) * sizeof(fann_type));
+	}
+	error_begin = ann->train_errors;
+
+#ifdef DEBUGTRAIN
+	printf("\ncalculate errors\n");
+#endif
+	/* calculate the error and place it in the output layer */
+	error_it = error_begin + (last_layer_begin - first_neuron);
+
+	for(; last_layer_begin != last_layer_end; last_layer_begin++, output_mask++)
+	{
+		neuron_value = last_layer_begin->value;
+		neuron_diff = *desired_output - neuron_value;
+
+		neuron_diff = fann_update_MSE(ann, last_layer_begin, neuron_diff);
+
+		if(ann->train_error_function)
+		{						/* TODO make switch when more functions */
+			if(neuron_diff < -.9999999)
+				neuron_diff = -17.0;
+			else if(neuron_diff > .9999999)
+				neuron_diff = 17.0;
+			else
+				neuron_diff = (fann_type) log((1.0 + neuron_diff) / (1.0 - neuron_diff));
+		}
+
+        if(output_mask)
+        {
+    		*error_it = fann_activation_derived(last_layer_begin->activation_function,
+    											last_layer_begin->activation_steepness, neuron_value,
+    											last_layer_begin->sum) * neuron_diff;
+        }
 
 		desired_output++;
 		error_it++;

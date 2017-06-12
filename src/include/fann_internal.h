@@ -79,6 +79,7 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file);
 struct fann_train_data *fann_read_train_from_fd(FILE * file, const char *filename);
 
 void fann_compute_MSE(struct fann *ann, fann_type * desired_output);
+void fann_compute_MSE_masked(struct fann *ann, fann_type * desired_output, char * output_mask);
 void fann_update_output_weights(struct fann *ann);
 void fann_backpropagate_MSE(struct fann *ann);
 void fann_update_weights(struct fann *ann);
