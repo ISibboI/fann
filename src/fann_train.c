@@ -200,7 +200,7 @@ FANN_EXTERNAL float FANN_API fann_get_MSE(struct fann *ann)
 
 FANN_EXTERNAL unsigned int FANN_API fann_get_bit_fail(struct fann *ann)
 {
-	return ann->num_bit_fail;	
+	return ann->num_bit_fail;
 }
 
 /* reset the mean square error.
@@ -356,7 +356,7 @@ void fann_backpropagate_MSE(struct fann *ann)
 
 		for(neuron_it = (layer_it - 1)->first_neuron; neuron_it != last_neuron; neuron_it++)
 		{
-			*error_prev_layer *= fann_activation_derived(neuron_it->activation_function, 
+			*error_prev_layer *= fann_activation_derived(neuron_it->activation_function,
 				neuron_it->activation_steepness, neuron_it->value, neuron_it->sum);
 			error_prev_layer++;
 		}
@@ -377,7 +377,7 @@ void fann_update_weights(struct fann *ann)
 
 	/* store some variabels local for fast access */
 	const float learning_rate = ann->learning_rate;
-    const float learning_momentum = ann->learning_momentum;        
+    const float learning_momentum = ann->learning_momentum;
 	struct fann_neuron *first_neuron = ann->first_layer->first_neuron;
 	struct fann_layer *first_layer = ann->first_layer;
 	const struct fann_layer *last_layer = ann->last_layer;
@@ -393,7 +393,7 @@ void fann_update_weights(struct fann *ann)
 		{
 			fann_error((struct fann_error *) ann, FANN_E_CANT_ALLOCATE_MEM);
 			return;
-		}		
+		}
 	}
 
 #ifdef DEBUGTRAIN
@@ -673,7 +673,7 @@ void fann_update_weights_quickprop(struct fann *ann, unsigned int num_data,
 				next_step += prev_step * slope / (prev_slope - slope);	/* Else, use quadratic estimate. */
 		}
 		else /* Last step was zero, so use only linear term. */
-			next_step += epsilon * slope; 
+			next_step += epsilon * slope;
 
 		/*
 		if(next_step > 1000 || next_step < -1000)
@@ -875,7 +875,7 @@ FANN_EXTERNAL struct fann_layer* FANN_API fann_get_layer(struct fann *ann, int l
 		return NULL;
 	}
 	
-	return ann->first_layer + layer;	
+	return ann->first_layer + layer;
 }
 
 FANN_EXTERNAL struct fann_neuron* FANN_API fann_get_neuron_layer(struct fann *ann, struct fann_layer* layer, int neuron)
@@ -883,7 +883,7 @@ FANN_EXTERNAL struct fann_neuron* FANN_API fann_get_neuron_layer(struct fann *an
 	if(neuron >= (layer->last_neuron - layer->first_neuron))
 	{
 		fann_error((struct fann_error *) ann, FANN_E_INDEX_OUT_OF_BOUND, neuron);
-		return NULL;	
+		return NULL;
 	}
 	
 	return layer->first_neuron + neuron;
